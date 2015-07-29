@@ -1,22 +1,19 @@
-// PLAYLIST MANAGER.
-
-// Hosts HTML page.
-// Wants to access protected resources.
+// MUSIC LIBRARY.
 
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
 import java.net.InetSocketAddress;
 
-public class Client
+public class ResourceServer
 {
     private HttpServer server;
 
-    public Client()
+    public ResourceServer()
     {
         try
         {
-            server = HttpServer.create(new InetSocketAddress(8082), 0);
+            server = HttpServer.create(new InetSocketAddress(8081), 0);
 
             server.createContext("/test", t ->
             {
