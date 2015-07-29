@@ -16,14 +16,7 @@ public class AuthorisationServer
         {
             server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-            server.createContext("/test", t ->
-            {
-                String response = "This is the response";
-                t.sendResponseHeaders(200, response.length());
-                OutputStream os = t.getResponseBody();
-                os.write(response.getBytes());
-                os.close();
-            });
+            setUpLogin();
 
             server.setExecutor(null);
         }
@@ -31,6 +24,23 @@ public class AuthorisationServer
         {
             e.printStackTrace();
         }
+    }
+
+    private void setUpLogin()
+    {
+        server.createContext("/oauth2", request ->
+        {
+
+
+            String response = "This is the response";
+
+
+
+            request.sendResponseHeaders(200, response.length());
+            OutputStream os = request.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        });
     }
 
     public void start()
