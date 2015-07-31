@@ -1,5 +1,4 @@
-// IDENTITY PROVIDER.
-// OneID.
+// OneID IDENTITY PROVIDER.
 
 import com.sun.net.httpserver.HttpServer;
 
@@ -47,18 +46,21 @@ public class AuthorisationServer
                             && params.containsKey("client_id")
                             && params.containsKey("scope"))
                     {
-                        File file = new File("Assets/OneID.html");
-                        request.sendResponseHeaders(200, file.length());
 
-                        try (FileInputStream fileInputStream = new FileInputStream(file);
-                             OutputStream os = request.getResponseBody())
-                        {
-                            byte[] buffer = new byte[(int) file.length()];
-                            int count = 0;
+                        Utilities.html(request, "Assets/OneID.html");
 
-                            while ((count = fileInputStream.read(buffer)) >= 0)
-                                os.write(buffer, 0, count);
-                        }
+//                        File file = new File("Assets/OneID.html");
+//                        request.sendResponseHeaders(200, file.length());
+//
+//                        try (FileInputStream fileInputStream = new FileInputStream(file);
+//                             OutputStream os = request.getResponseBody())
+//                        {
+//                            byte[] buffer = new byte[(int) file.length()];
+//                            int count = 0;
+//
+//                            while ((count = fileInputStream.read(buffer)) >= 0)
+//                                os.write(buffer, 0, count);
+//                        }
                     }
                     else
                         request.sendResponseHeaders(400, 0);

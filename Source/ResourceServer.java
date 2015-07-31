@@ -1,4 +1,4 @@
-// MUSIC LIBRARY.
+// hipstr MUSIC LIBRARY.
 
 // User's personal music uploaded as resources.
 

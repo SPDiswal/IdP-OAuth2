@@ -1,4 +1,4 @@
-// PLAYLIST MANAGER.
+// playlistr PLAYLIST MANAGER.
 
 // Hosts HTML page.
 // Wants to access protected resources.
@@ -18,14 +18,7 @@ public class Client
         {
             server = HttpServer.create(new InetSocketAddress(8082), 0);
 
-            server.createContext("/test", t ->
-            {
-                String response = "This is the response";
-                t.sendResponseHeaders(200, response.length());
-                OutputStream os = t.getResponseBody();
-                os.write(response.getBytes());
-                os.close();
-            });
+            setUpAuthentication();
 
             server.setExecutor(null);
         }
@@ -33,6 +26,23 @@ public class Client
         {
             e.printStackTrace();
         }
+    }
+
+    private void setUpAuthentication() throws IOException
+    {
+        server.createContext("/", request -> Utilities.html(request, "Assets/Playlistr.html"));
+    }
+
+    private void setUpAuthenticated() throws IOException
+    {
+        server.createContext("/authenticated", request ->
+        {
+            String response = "This is the response";
+            request.sendResponseHeaders(200, response.length());
+            OutputStream os = request.getResponseBody();
+            os.write(response.getBytes());
+            os.close();
+        });
     }
 
     public void start()
