@@ -44,10 +44,7 @@ public class Client
         {
             Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
-            String target = GET_ACCESS_TOKEN + "?authorisationCode=" + params.get("authorisationCode") + "&clientId=" + PLAYLISTR_SECRET;
-            System.out.println(target);
-
-            URL url = new URL(target);
+            URL url = new URL(GET_ACCESS_TOKEN + "?authorisationCode=" + params.get("authorisationCode") + "&client_id=" + PLAYLISTR_SECRET);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
