@@ -6,10 +6,14 @@
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
-import java.net.InetSocketAddress;
+import java.net.*;
+import java.util.Map;
 
 public class Client
 {
+    private static final String GET_ACCESS_TOKEN = "http://localhost:8080/token";
+    private static final String PLAYLISTR_SECRET = "playlistrSecret";
+
     private HttpServer server;
 
     public Client()
@@ -38,9 +42,25 @@ public class Client
     {
         server.createContext("/authenticated", request ->
         {
-            System.out.println("WORLD");
+            Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
-            String response = "This is the response";
+            String target = GET_ACCESS_TOKEN + "?authorisationCode=" + params.get("authorisationCode") + "&clientId=" + PLAYLISTR_SECRET;
+            System.out.println(target);
+
+            URL url = new URL(target);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            String line;
+            StringBuilder result = new StringBuilder();
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())))
+            {
+                while ((line = reader.readLine()) != null)
+                    result.append(line);
+            }
+
+            String response = result.toString();
             request.sendResponseHeaders(200, response.length());
             OutputStream os = request.getResponseBody();
             os.write(response.getBytes());
