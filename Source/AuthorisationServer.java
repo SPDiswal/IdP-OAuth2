@@ -11,6 +11,7 @@ public class AuthorisationServer
 {
     private HttpServer server;
     private Set<String> clients = new HashSet<>();
+    private Map<String, Void /* TODO */> accessTokens = new HashMap<>();
 
     public AuthorisationServer()
     {
@@ -60,9 +61,7 @@ public class AuthorisationServer
                         }
                     }
                     else
-                    {
-                        // TODO: 403 Bad request.
-                    }
+                        request.sendResponseHeaders(400, 0);
 
                     break;
 
@@ -71,8 +70,8 @@ public class AuthorisationServer
                     // STEP 8: Authenticate user (validate username/password).
                     // STEP 9: Generate authorisation code.
 
-                    String returnUrl = params.get("return_url") + "?authorisationCode=" + "BOGUS";  // TODO Manage authorisation code.
-                    request.getResponseHeaders().add("Location", returnUrl);
+                    String redirectUri = params.get("redirect_uri") + "?authorisationCode=" + "BOGUS";  // TODO Manage authorisation code.
+                    request.getResponseHeaders().add("Location", redirectUri);
 
                     break;
             }
@@ -82,16 +81,30 @@ public class AuthorisationServer
     private void setUpGenerateAccessToken()
     {
         // STEP 10: Get access token.
-        server.createContext("/access", request ->
+        server.createContext("/token", request ->
         {
             // STEP 11: Generate access token.
 
-            String response = "This is the response";
+            Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
-            request.sendResponseHeaders(200, response.length());
-            OutputStream os = request.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            if (params.get("authorisationCode").equals("BOGUS") && params.get("client_id").equals("playlistrSecret"))
+            {
+                String response = "{" +
+                        "\"access_token\":\"bogusAccess\"," +
+                        "\"token_type\":\"bearer\"," +
+                        "\"expires_in\":\"1337\"" +
+                        "}";
+
+                // TODO: Polish access token.
+
+                request.sendResponseHeaders(200, response.length());
+
+                OutputStream os = request.getResponseBody();
+                os.write(response.getBytes());
+                os.close();
+            }
+            else
+                request.sendResponseHeaders(400, 0);
         });
     }
 
