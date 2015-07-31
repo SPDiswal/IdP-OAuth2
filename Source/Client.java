@@ -19,6 +19,7 @@ public class Client
             server = HttpServer.create(new InetSocketAddress(8082), 0);
 
             setUpAuthentication();
+            setUpAuthenticated();
 
             server.setExecutor(null);
         }
@@ -37,6 +38,8 @@ public class Client
     {
         server.createContext("/authenticated", request ->
         {
+            System.out.println("WORLD");
+
             String response = "This is the response";
             request.sendResponseHeaders(200, response.length());
             OutputStream os = request.getResponseBody();
