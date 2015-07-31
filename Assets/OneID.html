@@ -8,8 +8,21 @@
     <title>Log in with OneID</title>
 </head>
 <body>
-    <!-- TODO: Insert hipstr text here -->
-    Log in with OneID
-    <!-- TODO: Read client app id and create this text: Playlistr wants to access your music library at Hipstr. -->
+    <h1>Log in with OneID</h1>
+    <img src="https://raw.githubusercontent.com/SPDiswal/IdP-OAuth2/master/Assets/OneID-logo.png" height="200" alt="OneID logo">
+    <form method="POST">
+        <label>
+            Username:
+            <input type="text" name="username"/>
+        </label>
+        <br />
+        <br />
+        <label>
+            Password:
+            <input type="password" name="password"/>
+        </label>
+        <br />
+        <input type="submit" name="submit" value="Log in" />
+    </form>
 </body>
 </html>
