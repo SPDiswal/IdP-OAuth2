@@ -75,6 +75,8 @@ public class ResourceServer
         });
     }
 
+    // TODO: Get username/email endpoint in addition to /music.
+
     // Borrowed from: http://www.rgagnon.com/javadetails/java-get-url-parameters-using-jdk-http-server.html
     private Map<String, String> getQueryParameters(String query)
     {
