@@ -11,11 +11,11 @@ import java.util.*;
 public class ResourceServer
 {
     private HttpServer server;
-    private Map<String, List<String>> trackTitles = new HashMap<>();
+    private Map<String, Set<String>> trackTitles = new HashMap<>();
 
     public ResourceServer()
     {
-        InitialiseTrackTitles();
+        initialiseTrackTitles();
 
         try
         {
@@ -34,15 +34,15 @@ public class ResourceServer
         server.start();
     }
 
-    private void InitialiseTrackTitles()
+    private void initialiseTrackTitles()
     {
-        List<String> titlesOfAlice = new ArrayList<>();
+        Set<String> titlesOfAlice = new HashSet<>();
         titlesOfAlice.add("Major Lazer - Powerful");
         titlesOfAlice.add("Zara Larsson - Lush Life");
         titlesOfAlice.add("Ed Sheeran - Photograph");
         trackTitles.put("Alice", titlesOfAlice);
 
-        List<String> titlesOfBob = new ArrayList<>();
+        Set<String> titlesOfBob = new HashSet<>();
         titlesOfBob.add("Metallica - Enter Sandman");
         titlesOfBob.add("System Of A Down - B.Y.O.B.");
         trackTitles.put("Bob", titlesOfBob);
@@ -53,7 +53,7 @@ public class ResourceServer
         // STEP 16: Retrieve access token.
         server.createContext("/music", request ->
         {
-            Map<String, String> params = getQueryParameters(request.getRequestURI().getQuery());
+            Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
             if (params.containsKey("accessToken"))
             {
@@ -76,19 +76,4 @@ public class ResourceServer
     }
 
     // TODO: Get username/email endpoint in addition to /music.
-
-    // Borrowed from: http://www.rgagnon.com/javadetails/java-get-url-parameters-using-jdk-http-server.html
-    private Map<String, String> getQueryParameters(String query)
-    {
-        Map<String, String> result = new HashMap<>();
-
-        for (String param : query.split("&"))
-        {
-            String pair[] = param.split("=");
-            if (pair.length > 1) result.put(pair[0], pair[1]);
-            else result.put(pair[0], "");
-        }
-
-        return result;
-    }
 }
