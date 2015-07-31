@@ -12,6 +12,7 @@ import java.util.Map;
 public class Client
 {
     private static final String GET_ACCESS_TOKEN = "http://localhost:8080/token";
+    private static final String PLAYLISTS_URI = "http://localhost:8082/playlists";
     private static final String PLAYLISTR_SECRET = "playlistrSecret";
 
     private HttpServer server;
@@ -24,6 +25,7 @@ public class Client
 
             setUpAuthentication();
             setUpAuthenticated();
+            setUpPlaylists();
 
             server.setExecutor(null);
         }
@@ -57,12 +59,19 @@ public class Client
                     result.append(line);
             }
 
-            String response = result.toString();
-            request.sendResponseHeaders(200, response.length());
-            OutputStream os = request.getResponseBody();
-            os.write(response.getBytes());
-            os.close();
+            String accessTokenData = result.toString();
+            String accessToken = accessTokenData.substring(accessTokenData.indexOf(":") + 2, accessTokenData.indexOf("\"", accessTokenData.indexOf(":") + 2));
+
+            String redirectUri = PLAYLISTS_URI + "?accessToken=" + accessToken;
+            request.getResponseHeaders().add("Location", redirectUri);
+            request.sendResponseHeaders(302, 0);
+            request.getResponseBody().close();
         });
+    }
+
+    private void setUpPlaylists() throws IOException
+    {
+        server.createContext("/playlists", request -> Utilities.html(request, "Assets/MyPlaylists.html"));
     }
 
     public void start()
