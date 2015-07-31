@@ -75,6 +75,7 @@ public class AuthorisationServer
                     String redirectUri = params.get("redirect_uri") + "?authorisationCode=" + "BOGUS";  // TODO Manage authorisation code.
                     request.getResponseHeaders().add("Location", redirectUri);
                     request.sendResponseHeaders(302, 0);
+                    request.getResponseBody().close();
 
                     break;
             }
