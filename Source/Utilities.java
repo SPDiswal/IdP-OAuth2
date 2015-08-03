@@ -1,10 +1,14 @@
 import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.*;
 
 public class Utilities
 {
+    private static SecureRandom random = new SecureRandom();
+
     // Borrowed from: http://www.rgagnon.com/javadetails/java-get-url-parameters-using-jdk-http-server.html
     public static Map<String, String> getQueryParameters(String query)
     {
@@ -22,17 +26,45 @@ public class Utilities
 
     public static void html(HttpExchange request, String filename) throws IOException
     {
-        File file = new File(filename);
-        request.sendResponseHeaders(200, file.length());
+        html(request, filename, html -> html);
+    }
 
-        try (FileInputStream fileInputStream = new FileInputStream(file);
-             OutputStream os = request.getResponseBody())
+    public static void html(HttpExchange request, String filename, HtmlModifier modifier) throws IOException
+    {
+        String fileData = readFile(filename);
+
+        String html = modifier.modify(fileData);
+        int htmlLength = html.length();
+
+        request.sendResponseHeaders(200, htmlLength);
+        request.getResponseBody().write(html.getBytes());
+    }
+
+    public static String randomString()
+    {
+        return new BigInteger(130, random).toString(32);
+    }
+
+    private static String readFile(String file) throws IOException
+    {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file)))
         {
-            byte[] buffer = new byte[(int) file.length()];
-            int count;
+            String line;
+            StringBuilder stringBuilder = new StringBuilder();
+            String ls = System.getProperty("line.separator");
 
-            while ((count = fileInputStream.read(buffer)) >= 0)
-                os.write(buffer, 0, count);
+            while ((line = reader.readLine()) != null)
+            {
+                stringBuilder.append(line);
+                stringBuilder.append(ls);
+            }
+
+            return stringBuilder.toString();
         }
+    }
+
+    public interface HtmlModifier
+    {
+        String modify(String html);
     }
 }

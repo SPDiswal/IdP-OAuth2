@@ -10,20 +10,26 @@ public class AuthorisationServer
 {
     private HttpServer server;
     private Set<String> clients = new HashSet<>();
-    private Map<String, Void /* TODO */> accessTokens = new HashMap<>();
+
+    private Map<String, String> accessTokens = new HashMap<>();
+    private Map<String, Date> accessTokenExpirationTimes = new HashMap<>();
+
+    private Map<String, String> authorisationCodes = new HashMap<>();
+    private Map<String, Date> authorisationCodeExpirationTimes = new HashMap<>();
 
     private Map<String, URL> clientRedirectionUrls = new HashMap<>();
 
     public AuthorisationServer()
     {
-        clients.add("playlistrSecret");
-
         try
         {
+            registerClients();
+
             server = HttpServer.create(new InetSocketAddress(8080), 0);
 
             setUpAuthorisationEndpoint();
             setUpTokenEndpoint();
+            setUpValidationEndpoint();
 
             server.setExecutor(null);
         }
@@ -31,6 +37,11 @@ public class AuthorisationServer
         {
             e.printStackTrace();
         }
+    }
+
+    private void registerClients() throws MalformedURLException
+    {
+        clientRedirectionUrls.put("playlistrSecret", new URL("http://localhost:8082/authenticated"));
     }
 
     private void setUpAuthorisationEndpoint()
@@ -45,12 +56,8 @@ public class AuthorisationServer
                 case "GET":
                     // STEP 3: Redirect to show HTML page with login form.
 
-                    if (params.get("response_type").equals("code")
-                            && params.containsKey("client_id")
-                            && params.containsKey("scope"))
-                    {
+                    if (params.get("response_type").equals("code") && params.containsKey("client_id") && params.containsKey("scope"))
                         Utilities.html(request, "Assets/OneID.html");
-                    }
                     else
                         request.sendResponseHeaders(400, 0);
 
@@ -58,8 +65,13 @@ public class AuthorisationServer
 
                 case "POST":
                     // STEP 7: Authentication consent.
+
                     // STEP 8: Authenticate user (validate username/password).
+
                     // STEP 9: Generate authorisation code.
+                    String authorisationCode = Utilities.randomString();
+
+
 
                     String redirectUri = params.get("redirect_uri") + "?code=" + "BOGUS";  // TODO Manage authorisation code.
                     request.getResponseHeaders().add("Location", redirectUri);
@@ -99,6 +111,15 @@ public class AuthorisationServer
             }
             else
                 request.sendResponseHeaders(400, 0);
+        });
+    }
+
+    private void setUpValidationEndpoint()
+    {
+        // Token endpoint.
+        server.createContext("/validate", request ->
+        {
+            // POST.
         });
     }
 
