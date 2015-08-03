@@ -115,10 +115,18 @@ public class AuthorisationServer
                         authorisationCodeClients.put(authorisationCode, clientId);
                         authorisationCodeUsers.put(authorisationCode, username);
 
-                        String redirectUri = clientRedirectionUrls.get(clientId) + "?code=" + authorisationCode;
-                        request.getResponseHeaders().add("Location", redirectUri);
-                        request.sendResponseHeaders(302, 0);
-                        request.getResponseBody().close();
+                        if (clientRedirectionUrls.containsKey(clientId))
+                        {
+                            String redirectUri = clientRedirectionUrls.get(clientId) + "?code=" + authorisationCode;
+                            request.getResponseHeaders().add("Location", redirectUri);
+                            request.sendResponseHeaders(302, 0);
+                            request.getResponseBody().close();
+                        }
+                        else
+                        {
+                            request.sendResponseHeaders(401, 0);
+                            request.getResponseBody().close();
+                        }
                     }
                     else
                     {
@@ -141,36 +149,45 @@ public class AuthorisationServer
             if (params.containsKey("code") && params.containsKey("client_id"))
             {
                 String clientId = params.get("client_id");
-                String code = authorisationCodeClients.get(clientId);
-                Date codeExpirationDate = authorisationCodeExpirationTimes.get(code);
-                boolean hasExpired = new Date().after(codeExpirationDate);
-                String username = authorisationCodeUsers.get(code);
 
-                // STEP 10: Get access token.
-                if (params.get("code").equals(code) && !hasExpired)
+                if (authorisationCodeClients.containsKey(clientId))
                 {
-                    // STEP 11: Generate access token.
-                    String accessToken = Utilities.randomString();
+                    String code = authorisationCodeClients.get(clientId);
+                    Date codeExpirationDate = authorisationCodeExpirationTimes.get(code);
+                    boolean hasExpired = new Date().after(codeExpirationDate);
+                    String username = authorisationCodeUsers.get(code);
 
-                    long t = new Date().getTime();
-                    Date tokenExpirationDate = new Date(t + (3 * MILLISECONDS_PER_HOUR));
+                    // STEP 10: Get access token.
+                    if (params.get("code").equals(code) && !hasExpired)
+                    {
+                        // STEP 11: Generate access token.
+                        String accessToken = Utilities.randomString();
 
-                    accessTokens.add(accessToken);
-                    accessTokenExpirationTimes.put(accessToken, tokenExpirationDate);
-                    accessTokenClients.put(accessToken, clientId);
-                    accessTokenUsers.put(accessToken, username);
+                        long t = new Date().getTime();
+                        Date tokenExpirationDate = new Date(t + (3 * MILLISECONDS_PER_HOUR));
 
-                    String response = "{" +
-                            "\"access_token\":\"" + accessToken + "\"," +
-                            "\"token_type\":\"bearer\"," +
-                            "\"expires_in\":\"10799\"" +
-                            "}";
+                        accessTokens.add(accessToken);
+                        accessTokenExpirationTimes.put(accessToken, tokenExpirationDate);
+                        accessTokenClients.put(accessToken, clientId);
+                        accessTokenUsers.put(accessToken, username);
 
-                    request.sendResponseHeaders(200, response.length());
+                        String response = "{" +
+                                "\"access_token\":\"" + accessToken + "\"," +
+                                "\"token_type\":\"bearer\"," +
+                                "\"expires_in\":\"10799\"" +
+                                "}";
 
-                    OutputStream os = request.getResponseBody();
-                    os.write(response.getBytes());
-                    os.close();
+                        request.sendResponseHeaders(200, response.length());
+
+                        OutputStream os = request.getResponseBody();
+                        os.write(response.getBytes());
+                        os.close();
+                    }
+                    else
+                    {
+                        request.sendResponseHeaders(401, 0);
+                        request.getResponseBody().close();
+                    }
                 }
                 else
                 {
