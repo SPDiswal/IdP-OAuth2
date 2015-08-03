@@ -85,10 +85,17 @@ public class AuthorisationServer
 
                     try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getRequestBody())))
                     {
+                        StringBuilder builder = new StringBuilder();
+
                         while ((line = reader.readLine()) != null)
+                            builder.append(line);
+
+                        String[] entries = builder.toString().split("&");
+
+                        for (String entry : entries)
                         {
-                            if (line.startsWith("username=")) username = line.substring(9);
-                            if (line.startsWith("password=")) password = line.substring(9);
+                            if (entry.startsWith("username=")) username = entry.split("=")[1];
+                            if (entry.startsWith("password=")) password = entry.split("=")[1];
                         }
                     }
 
@@ -187,8 +194,15 @@ public class AuthorisationServer
 
                 try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getRequestBody())))
                 {
+                    StringBuilder builder = new StringBuilder();
+
                     while ((line = reader.readLine()) != null)
-                        if (line.startsWith("accessToken=")) accessToken = line;
+                        builder.append(line);
+
+                    String[] entries = builder.toString().split("&");
+
+                    for (String entry : entries)
+                        if (entry.startsWith("accessToken=")) accessToken = entry.split("=")[1];
                 }
 
                 if (accessTokens.contains(accessToken))

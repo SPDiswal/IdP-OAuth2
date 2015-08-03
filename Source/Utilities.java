@@ -37,8 +37,11 @@ public class Utilities
         String html = modifier.modify(fileData, request);
         int htmlLength = html.length();
 
-        request.sendResponseHeaders(200, htmlLength);
-        request.getResponseBody().write(html.getBytes());
+        try (OutputStream responseBody = request.getResponseBody())
+        {
+            request.sendResponseHeaders(200, htmlLength);
+            responseBody.write(html.getBytes());
+        }
     }
 
     public static String randomString()
