@@ -149,16 +149,17 @@ public class AuthorisationServer
             if (params.containsKey("code") && params.containsKey("client_id"))
             {
                 String clientId = params.get("client_id");
+                String code = params.get("code");
 
-                if (authorisationCodeClients.containsKey(clientId))
+                if (authorisationCodeClients.containsKey(code))
                 {
-                    String code = authorisationCodeClients.get(clientId);
+                    String associatedClientId = authorisationCodeClients.get(code);
                     Date codeExpirationDate = authorisationCodeExpirationTimes.get(code);
                     boolean hasExpired = new Date().after(codeExpirationDate);
                     String username = authorisationCodeUsers.get(code);
 
                     // STEP 10: Get access token.
-                    if (params.get("code").equals(code) && !hasExpired)
+                    if (clientId.equals(associatedClientId) && !hasExpired)
                     {
                         // STEP 11: Generate access token.
                         String accessToken = Utilities.randomString();
