@@ -11,7 +11,8 @@ import java.util.Map;
 
 public class Client
 {
-    private static final String GET_ACCESS_TOKEN = "http://localhost:8080/token";
+    private static final String TOKEN_ENDPOINT = "http://localhost:8080/token";
+
     private static final String PLAYLISTS_URI = "http://localhost:8082/playlists";
     private static final String PLAYLISTR_SECRET = "playlistrSecret";
 
@@ -24,7 +25,7 @@ public class Client
             server = HttpServer.create(new InetSocketAddress(8082), 0);
 
             setUpAuthentication();
-            setUpAuthenticated();
+            setUpRedirectionEndpoint();
             setUpPlaylists();
 
             server.setExecutor(null);
@@ -40,13 +41,14 @@ public class Client
         server.createContext("/", request -> Utilities.html(request, "Assets/Playlistr.html"));
     }
 
-    private void setUpAuthenticated() throws IOException
+    private void setUpRedirectionEndpoint() throws IOException
     {
+        // Redirection endpoint.
         server.createContext("/authenticated", request ->
         {
             Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
-            URL url = new URL(GET_ACCESS_TOKEN + "?authorisationCode=" + params.get("authorisationCode") + "&client_id=" + PLAYLISTR_SECRET);
+            URL url = new URL(TOKEN_ENDPOINT + "?code=" + params.get("code") + "&client_id=" + PLAYLISTR_SECRET);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 

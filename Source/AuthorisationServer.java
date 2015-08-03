@@ -3,7 +3,7 @@
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
-import java.net.InetSocketAddress;
+import java.net.*;
 import java.util.*;
 
 public class AuthorisationServer
@@ -11,6 +11,8 @@ public class AuthorisationServer
     private HttpServer server;
     private Set<String> clients = new HashSet<>();
     private Map<String, Void /* TODO */> accessTokens = new HashMap<>();
+
+    private Map<String, URL> clientRedirectionUrls = new HashMap<>();
 
     public AuthorisationServer()
     {
@@ -20,8 +22,8 @@ public class AuthorisationServer
         {
             server = HttpServer.create(new InetSocketAddress(8080), 0);
 
-            setUpAuthenticate();
-            setUpGenerateAccessToken();
+            setUpAuthorisationEndpoint();
+            setUpTokenEndpoint();
 
             server.setExecutor(null);
         }
@@ -31,8 +33,9 @@ public class AuthorisationServer
         }
     }
 
-    private void setUpAuthenticate()
+    private void setUpAuthorisationEndpoint()
     {
+        // Authorisation endpoint.
         server.createContext("/oauth2", request ->
         {
             Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
@@ -46,21 +49,7 @@ public class AuthorisationServer
                             && params.containsKey("client_id")
                             && params.containsKey("scope"))
                     {
-
                         Utilities.html(request, "Assets/OneID.html");
-
-//                        File file = new File("Assets/OneID.html");
-//                        request.sendResponseHeaders(200, file.length());
-//
-//                        try (FileInputStream fileInputStream = new FileInputStream(file);
-//                             OutputStream os = request.getResponseBody())
-//                        {
-//                            byte[] buffer = new byte[(int) file.length()];
-//                            int count = 0;
-//
-//                            while ((count = fileInputStream.read(buffer)) >= 0)
-//                                os.write(buffer, 0, count);
-//                        }
                     }
                     else
                         request.sendResponseHeaders(400, 0);
@@ -72,7 +61,7 @@ public class AuthorisationServer
                     // STEP 8: Authenticate user (validate username/password).
                     // STEP 9: Generate authorisation code.
 
-                    String redirectUri = params.get("redirect_uri") + "?authorisationCode=" + "BOGUS";  // TODO Manage authorisation code.
+                    String redirectUri = params.get("redirect_uri") + "?code=" + "BOGUS";  // TODO Manage authorisation code.
                     request.getResponseHeaders().add("Location", redirectUri);
                     request.sendResponseHeaders(302, 0);
                     request.getResponseBody().close();
@@ -82,16 +71,17 @@ public class AuthorisationServer
         });
     }
 
-    private void setUpGenerateAccessToken()
+    private void setUpTokenEndpoint()
     {
-        // STEP 10: Get access token.
+        // Token endpoint.
         server.createContext("/token", request ->
         {
+            // STEP 10: Get access token.
             // STEP 11: Generate access token.
 
             Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
 
-            if (params.get("authorisationCode").equals("BOGUS") && params.get("client_id").equals("playlistrSecret"))
+            if (params.get("code").equals("BOGUS") && params.get("client_id").equals("playlistrSecret"))
             {
                 String response = "{" +
                         "\"access_token\":\"bogusAccess\"," +
