@@ -5,6 +5,7 @@
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.sun.net.httpserver.Headers;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
@@ -62,8 +63,7 @@ public class Client
             String accessTokenData = result.toString();
             String accessToken = accessTokenData.substring(accessTokenData.indexOf(":") + 2, accessTokenData.indexOf("\"", accessTokenData.indexOf(":") + 2));
 
-            request.getResponseHeaders().add("Authorization", "Bearer " + accessToken);
-            request.getResponseHeaders().add("Location", PLAYLISTS_URI);
+            request.getResponseHeaders().add("Location", PLAYLISTS_URI+"?access_token="+accessToken);
             request.sendResponseHeaders(302, 0);
             request.getResponseBody().close();
         });
@@ -82,11 +82,13 @@ public class Client
 
     private String findAndReplace(String html, HttpExchange request) throws IOException {
         URL url = new URL(RESOURCE_MUSIC);
+
+        Map<String, String> params = Utilities.getQueryParameters(request.getRequestURI().getQuery());
+
         HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setDoOutput(true);
-        connection.setUseCaches(false);
-        connection.setRequestProperty("Authorization", request.getResponseHeaders().getFirst("Authorization"));
+        connection.setRequestProperty("Authorization", "Bearer "+params.get("access_token"));
         connection.setRequestMethod("POST");
+        connection.setDoOutput(true);
 
         String result = Utilities.getResponse(connection).toString();
         //String result = "[\"Test 1\", \"Test 2\"]";
