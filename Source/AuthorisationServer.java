@@ -24,6 +24,9 @@ public class AuthorisationServer
 
     private Map<String /* clientID */, URL> clientRedirectionUrls = new HashMap<>();
 
+    private static final long MILLISECONDS_PER_MINUTE = 60000;
+    private static final long MILLISECONDS_PER_HOUR = 3600000;
+
     public AuthorisationServer()
     {
         try
@@ -105,8 +108,8 @@ public class AuthorisationServer
                         String clientId = params.get("client_id");
                         String authorisationCode = Utilities.randomString();
 
-                        LocalDateTime localDateTime = LocalDateTime.from(new Date().toInstant()).plusMinutes(10);
-                        Date expirationDate = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+                        long t = new Date().getTime();
+                        Date expirationDate = new Date(t + (10 * MILLISECONDS_PER_MINUTE));
 
                         authorisationCodeExpirationTimes.put(authorisationCode, expirationDate);
                         authorisationCodeClients.put(authorisationCode, clientId);
@@ -149,8 +152,8 @@ public class AuthorisationServer
                     // STEP 11: Generate access token.
                     String accessToken = Utilities.randomString();
 
-                    LocalDateTime localDateTime = LocalDateTime.from(new Date().toInstant()).plusHours(3);
-                    Date tokenExpirationDate = Date.from(localDateTime.atZone(ZoneId.systemDefault()).toInstant());
+                    long t = new Date().getTime();
+                    Date tokenExpirationDate = new Date(t + (3 * MILLISECONDS_PER_HOUR));
 
                     accessTokens.add(accessToken);
                     accessTokenExpirationTimes.put(accessToken, tokenExpirationDate);
