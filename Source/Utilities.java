@@ -2,6 +2,7 @@ import com.sun.net.httpserver.HttpExchange;
 
 import java.io.*;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.security.SecureRandom;
 import java.util.*;
 
@@ -26,14 +27,14 @@ public class Utilities
 
     public static void html(HttpExchange request, String filename) throws IOException
     {
-        html(request, filename, html -> html);
+        html(request, filename, (html, r) -> html);
     }
 
     public static void html(HttpExchange request, String filename, HtmlModifier modifier) throws IOException
     {
         String fileData = readFile(filename);
 
-        String html = modifier.modify(fileData);
+        String html = modifier.modify(fileData, request);
         int htmlLength = html.length();
 
         request.sendResponseHeaders(200, htmlLength);
@@ -65,6 +66,17 @@ public class Utilities
 
     public interface HtmlModifier
     {
-        String modify(String html);
+        String modify(String html, HttpExchange request) throws IOException;
+    }
+
+    public static StringBuilder getResponse(HttpURLConnection request) throws IOException {
+        String line;
+        StringBuilder result = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(request.getInputStream())))
+        {
+            while ((line = reader.readLine()) != null)
+                result.append(line);
+        }
+        return result;
     }
 }
