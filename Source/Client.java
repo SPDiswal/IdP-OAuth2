@@ -3,16 +3,21 @@
 // Hosts HTML page.
 // Wants to access protected resources.
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
+import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.net.*;
+import java.util.Collection;
 import java.util.Map;
 
 public class Client
 {
     private static final String TOKEN_ENDPOINT = "http://localhost:8080/token";
-
+    private static final String RESOURCE_MUSIC = "http://localhost:8081/music";
     private static final String PLAYLISTS_URI = "http://localhost:8082/playlists";
     private static final String PLAYLISTR_SECRET = "playlistrSecret";
 
@@ -52,28 +57,51 @@ public class Client
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
 
-            String line;
-            StringBuilder result = new StringBuilder();
-
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())))
-            {
-                while ((line = reader.readLine()) != null)
-                    result.append(line);
-            }
+            StringBuilder result = Utilities.getResponse(connection);
 
             String accessTokenData = result.toString();
             String accessToken = accessTokenData.substring(accessTokenData.indexOf(":") + 2, accessTokenData.indexOf("\"", accessTokenData.indexOf(":") + 2));
 
-            String redirectUri = PLAYLISTS_URI + "?accessToken=" + accessToken;
-            request.getResponseHeaders().add("Location", redirectUri);
+            request.getResponseHeaders().add("Authorization", "Bearer " + accessToken);
+            request.getResponseHeaders().add("Location", PLAYLISTS_URI);
             request.sendResponseHeaders(302, 0);
             request.getResponseBody().close();
         });
     }
 
-    private void setUpPlaylists() throws IOException
+    private void setUpPlaylists()
     {
-        server.createContext("/playlists", request -> Utilities.html(request, "Assets/MyPlaylists.html"));
+        server.createContext(
+                "/playlists",
+                request -> Utilities.html(
+                        request,
+                        "Assets/MyPlaylists.html",
+                        this::findAndReplace
+                ));
+    }
+
+    private String findAndReplace(String html, HttpExchange request) throws IOException {
+        URL url = new URL(RESOURCE_MUSIC);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setDoOutput(true);
+        connection.setUseCaches(false);
+        connection.setRequestProperty("Authorization", request.getResponseHeaders().getFirst("Authorization"));
+        connection.setRequestMethod("POST");
+
+        String result = Utilities.getResponse(connection).toString();
+        //String result = "[\"Test 1\", \"Test 2\"]";
+
+        Gson gson = new Gson();
+        Type collectionType = new TypeToken<Collection<String>>(){}.getType();
+        Collection<String> tracks = gson.fromJson(result, collectionType);
+
+        String tableBody = "";
+        for (String track : tracks) {
+            tableBody += "<tr><td>"+track+"</td></tr>";
+        }
+
+
+        return html.replaceAll("--playList--", tableBody);
     }
 
     public void start()
