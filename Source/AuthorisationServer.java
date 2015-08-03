@@ -71,7 +71,10 @@ public class AuthorisationServer
                     if (params.get("response_type").equals("code") && params.containsKey("client_id") && params.containsKey("scope"))
                         Utilities.html(request, "Assets/OneID.html");
                     else
+                    {
                         request.sendResponseHeaders(400, 0);
+                        request.getResponseBody().close();
+                    }
 
                     break;
 
@@ -108,7 +111,10 @@ public class AuthorisationServer
                         request.getResponseBody().close();
                     }
                     else
+                    {
                         request.sendResponseHeaders(401, 0);
+                        request.getResponseBody().close();
+                    }
 
                     break;
             }
@@ -157,10 +163,16 @@ public class AuthorisationServer
                     os.close();
                 }
                 else
+                {
                     request.sendResponseHeaders(400, 0);
+                    request.getResponseBody().close();
+                }
             }
             else
+            {
                 request.sendResponseHeaders(400, 0);
+                request.getResponseBody().close();
+            }
         });
     }
 
@@ -199,13 +211,22 @@ public class AuthorisationServer
                         os.close();
                     }
                     else
+                    {
                         request.sendResponseHeaders(401, 0);
+                        request.getResponseBody().close();
+                    }
                 }
                 else
+                {
                     request.sendResponseHeaders(401, 0);
+                    request.getResponseBody().close();
+                }
             }
             else
+            {
                 request.sendResponseHeaders(405, 0);
+                request.getResponseBody().close();
+            }
         });
     }
 
