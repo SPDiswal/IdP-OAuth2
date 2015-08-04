@@ -12,8 +12,7 @@ import com.sun.net.httpserver.HttpServer;
 import java.io.*;
 import java.lang.reflect.Type;
 import java.net.*;
-import java.util.Collection;
-import java.util.Map;
+import java.util.*;
 
 public class Client
 {
@@ -95,7 +94,8 @@ public class Client
 
         Gson gson = new Gson();
         Type collectionType = new TypeToken<Collection<String>>(){}.getType();
-        Collection<String> tracks = gson.fromJson(result, collectionType);
+        List<String> tracks = new ArrayList<>(gson.fromJson(result, collectionType));
+        Collections.shuffle(tracks);
 
         String tableBody = "";
         for (String track : tracks) {
